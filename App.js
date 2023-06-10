@@ -12,13 +12,10 @@ export default function App() {
         <Tab.Navigator
         screenOptions={{
             headerTitle: 'Pomodoro',
-            //tabBarActiveTintColor: '#1976d2',
-            //tabBarInactiveTintColor: 'grey',
                 tabBarStyle: {
                     backgroundColor: 'white',
                 },
                 headerStyle: {
-                    //backgroundColor: 'papayawhip',
                     backgroundColor: '#C5F4E0',
                 },
                 headerTitleStyle:{ 
