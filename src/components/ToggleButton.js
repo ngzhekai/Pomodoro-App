@@ -27,8 +27,8 @@ const styles = StyleSheet.create({
         flexDirection: 'column',
         alignItems: 'center',
         justifyContent: 'center',
-        paddingTop: 120,
-        paddingBottom: 60,
+        paddingTop: 100,
+        paddingBottom: 50,
     },
     toggleText: {
         fontSize: 15,
