@@ -1,6 +1,6 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import {NavigationContainer} from '@react-navigation/native';
-import Test from './src/components/FocusCycle';
+import Pomo from './src/screens/FocusCycle';
 import { StyleSheet } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { AntDesign } from '@expo/vector-icons';
@@ -11,14 +11,11 @@ export default function App() {
         <NavigationContainer style={styles.container}>
         <Tab.Navigator
         screenOptions={{
-            headerTitle: 'Pomodoro',
-            //tabBarActiveTintColor: '#1976d2',
-            //tabBarInactiveTintColor: 'grey',
+            headerTitle: 'PomoTimer',
                 tabBarStyle: {
                     backgroundColor: 'white',
                 },
                 headerStyle: {
-                    //backgroundColor: 'papayawhip',
                     backgroundColor: '#C5F4E0',
                 },
                 headerTitleStyle:{ 
@@ -31,12 +28,12 @@ export default function App() {
         options={{tabBarIcon: ({focused, color, size}) =>
                 <AntDesign name={focused ? 'clockcircleo' : 'clockcircle'} size={size} color={color} />
         }}
-        >{() => <Test is30Min={true} />}</Tab.Screen> 
+        >{() => <Pomo is30Min={true} />}</Tab.Screen> 
         <Tab.Screen name={'60-Min Cycle'}
         options={{tabBarIcon: ({focused, color, size}) =>
                 <AntDesign name={focused ? 'clockcircleo' : 'clockcircle'} size={size} color={color} />
         }}
-        >{() => <Test is30Min={false}/>}</Tab.Screen>
+        >{() => <Pomo is30Min={false}/>}</Tab.Screen>
         </Tab.Navigator>
         </NavigationContainer>
     );
