@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Alert } from 'react-native';
 import Layout from '../components/Layout';
 import Timer from '../components/Timer';
@@ -11,13 +11,20 @@ const FocusCycle = ({ is30Min }) => {
     const [timerCount, setTimerCount] = useState(is30Min ? 10 : 2700);
     const [isEnabled, setIsEnabled] = useState(false);
     const [sound, setSound] = useState(null);
+    const pausedTimerCountRef = useRef(null);
 
     const toggleSwitch = () => setIsEnabled((previousState) => !previousState);
     
     useEffect(() => {
-        let interval = null;
         const breakTimer = isEnabled ? (is30Min ? 5 : 900) : is30Min ? 10 : 2700;
-        setTimerCount(breakTimer);
+
+        if (pausedTimerCountRef.current !== null) {
+            setTimerCount(pausedTimerCountRef.current);
+        } else {
+            setTimerCount(breakTimer);
+        }
+
+        let interval = null;
 
         if (isActive) {
             interval = setInterval(() => {
@@ -32,8 +39,6 @@ const FocusCycle = ({ is30Min }) => {
                     return prevTimer - 1;
                 });
             }, 1000);
-        } else {
-            clearInterval(interval);
         }
 
         // to pause the timer from counting down
@@ -44,6 +49,15 @@ const FocusCycle = ({ is30Min }) => {
 
     const handleStartPause = () => {
         setIsActive((previousState) => !previousState);
+        if (!isActive) {
+            pausedTimerCountRef.current = timerCount;
+        }
+    };
+
+    const handleReset = () => {
+        setIsActive(false);
+        setTimerCount(is30Min ? 10 : 2700);
+        pausedTimerCountRef.current = null;
     };
 
     const notifyAlert = async () => {
@@ -79,7 +93,7 @@ const FocusCycle = ({ is30Min }) => {
         <Layout>
         <ToggleButton isEnabled={isEnabled} toggleSwitch={toggleSwitch} isActive={isActive} />
         <Timer timerCount={timerCount} />
-        <TimerButton isActive={isActive} handleStartPause={handleStartPause} />
+        <TimerButton isActive={isActive} handleStartPause={handleStartPause} handleReset={handleReset} />
         </Layout>
     );
 };
