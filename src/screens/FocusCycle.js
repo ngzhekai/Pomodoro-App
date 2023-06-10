@@ -12,11 +12,11 @@ const FocusCycle = ({ is30Min }) => {
     const [isEnabled, setIsEnabled] = useState(false);
     const [sound, setSound] = useState(null);
     const pausedTimerCountRef = useRef(null);
+    const breakTimer = isEnabled ? (is30Min ? 5 : 900) : is30Min ? 10 : 2700;
 
     const toggleSwitch = () => setIsEnabled((previousState) => !previousState);
     
     useEffect(() => {
-        const breakTimer = isEnabled ? (is30Min ? 5 : 900) : is30Min ? 10 : 2700;
 
         if (pausedTimerCountRef.current !== null) {
             setTimerCount(pausedTimerCountRef.current);
@@ -49,14 +49,16 @@ const FocusCycle = ({ is30Min }) => {
 
     const handleStartPause = () => {
         setIsActive((previousState) => !previousState);
-        if (!isActive) {
+        if (!isActive && pausedTimerCountRef.current !== null) {
+            setTimerCount(pausedTimerCountRef.current);
+        } else if (isActive) {
             pausedTimerCountRef.current = timerCount;
         }
     };
 
     const handleReset = () => {
         setIsActive(false);
-        setTimerCount(is30Min ? 10 : 2700);
+        setTimerCount(breakTimer);
         pausedTimerCountRef.current = null;
     };
 
