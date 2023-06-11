@@ -12,13 +12,14 @@ const db = SQLite.openDatabase('historyLog.db');
 
 db.transaction((tx) => {
     tx.executeSql(
-        'CREATE TABLE IF NOT EXISTS logs (id INTEGER PRIMARY KEY AUTOINCREMENT, task TEXT, datetime DATETIME, timerType INTEGER, isCompleted INTEGER)' 
+        'CREATE TABLE IF NOT EXISTS logs (id INTEGER PRIMARY KEY AUTOINCREMENT, event TEXT, datetime DATETIME, timerType INTEGER, isCompleted INTEGER)' 
         //'DROP TABLE IF EXISTS logs' // for dropping database
     );
 });
 
 const FocusCycle = ({ is30Min }) => {
-
+    
+    const { setIsRunning } = useContext(LogContext);
     const { setLogs } = useContext(LogContext);
     const { setPomoCompletedCount } = useContext(LogContext);
     const [isActive, setIsActive] = useState(false);
@@ -26,8 +27,8 @@ const FocusCycle = ({ is30Min }) => {
     const [isEnabled, setIsEnabled] = useState(false);
     const [sound, setSound] = useState(null);
     const pausedTimerCountRef = useRef(null);
-    const breakTimer = isEnabled ? (is30Min ? 300 : 900) : is30Min ? 1500 : 2700;
-    //const breakTimer = isEnabled ? (is30Min ? 2 : 3) : is30Min ? 4 : 5; //for debug ya
+    //const breakTimer = isEnabled ? (is30Min ? 300 : 900) : is30Min ? 1500 : 2700;
+    const breakTimer = isEnabled ? (is30Min ? 2 : 3) : is30Min ? 4 : 5; //for debug ya
 
     const toggleSwitch = () => setIsEnabled((previousState) => !previousState);
 
@@ -35,7 +36,7 @@ const FocusCycle = ({ is30Min }) => {
         const datetime = new Date().toISOString();
 
         db.transaction((tx) => {
-            tx.executeSql('INSERT INTO logs (task, datetime, isCompleted, timerType) VALUES (?, ?, ?, ?)', [message, datetime, isCompleted, timerType],
+            tx.executeSql('INSERT INTO logs (event, datetime, isCompleted, timerType) VALUES (?, ?, ?, ?)', [message, datetime, isCompleted, timerType],
                 (_, { insertId }) => {
                     // insertion successful, fetch logs again to update the state
                     console.log('log inserted successfully: ', insertId);
@@ -86,6 +87,7 @@ const FocusCycle = ({ is30Min }) => {
                             is30Min ? 30 : 60
                         );
                         setIsActive(false);
+                        setIsRunning(false);
                         notifyAlert();
                         setIsEnabled((previousState) => !previousState);       
                         return breakTimer;
@@ -102,6 +104,7 @@ const FocusCycle = ({ is30Min }) => {
 
     const handleStartPause = () => {
         setIsActive((previousState) => !previousState);
+        setIsRunning((previousState) => !previousState);
         if (!isActive && pausedTimerCountRef.current !== null) {
             setTimerCount(pausedTimerCountRef.current);
         } else if (isActive) {
@@ -112,6 +115,7 @@ const FocusCycle = ({ is30Min }) => {
 
     const handleReset = () => {
         setIsActive(false);
+        setIsRunning(false);
         setTimerCount(breakTimer);
         pausedTimerCountRef.current = null;  
         insertLog(isEnabled 
