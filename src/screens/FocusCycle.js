@@ -19,7 +19,6 @@ db.transaction((tx) => {
 
 const FocusCycle = ({ is30Min }) => {
     
-    const { setIsRunning } = useContext(LogContext);
     const { setLogs } = useContext(LogContext);
     const { setPomoCompletedCount } = useContext(LogContext);
     const [isActive, setIsActive] = useState(false);
@@ -27,8 +26,8 @@ const FocusCycle = ({ is30Min }) => {
     const [isEnabled, setIsEnabled] = useState(false);
     const [sound, setSound] = useState(null);
     const pausedTimerCountRef = useRef(null);
-    //const breakTimer = isEnabled ? (is30Min ? 300 : 900) : is30Min ? 1500 : 2700;
-    const breakTimer = isEnabled ? (is30Min ? 2 : 3) : is30Min ? 4 : 5; //for debug ya
+    const breakTimer = isEnabled ? (is30Min ? 300 : 900) : is30Min ? 1500 : 2700;
+    //const breakTimer = isEnabled ? (is30Min ? 2 : 3) : is30Min ? 4 : 5; //for debug ya
 
     const toggleSwitch = () => setIsEnabled((previousState) => !previousState);
 
@@ -87,7 +86,6 @@ const FocusCycle = ({ is30Min }) => {
                             is30Min ? 30 : 60
                         );
                         setIsActive(false);
-                        setIsRunning(false);
                         notifyAlert();
                         setIsEnabled((previousState) => !previousState);       
                         return breakTimer;
@@ -104,7 +102,6 @@ const FocusCycle = ({ is30Min }) => {
 
     const handleStartPause = () => {
         setIsActive((previousState) => !previousState);
-        setIsRunning((previousState) => !previousState);
         if (!isActive && pausedTimerCountRef.current !== null) {
             setTimerCount(pausedTimerCountRef.current);
         } else if (isActive) {
@@ -115,7 +112,6 @@ const FocusCycle = ({ is30Min }) => {
 
     const handleReset = () => {
         setIsActive(false);
-        setIsRunning(false);
         setTimerCount(breakTimer);
         pausedTimerCountRef.current = null;  
         insertLog(isEnabled 
