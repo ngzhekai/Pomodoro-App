@@ -39,15 +39,16 @@ const styles = StyleSheet.create({
         marginHorizontal: 10,
         marginVertical: 10,
         elevation: 8,
-        borderRadius: 10,
+        borderRadius: 12,
     },
     buttonType1: {
-        backgroundColor: '#8B1874',
+        //backgroundColor: '#8B1874',
+        backgroundColor: '#E5E5EA',
     },
     buttonText: {
-        fontSize: 18,
-        color: 'white',
-        fontWeight: 'bold',
+        fontSize: 16,
+        color: '#007AFF',
+        fontWeight: 'normal',
     },
 });
 
