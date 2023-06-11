@@ -1,23 +1,71 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { Alert } from 'react-native';
+import LogContext from '../contexts/LogContext';
 import Layout from '../components/Layout';
 import Timer from '../components/Timer';
 import ToggleButton from '../components/ToggleButton';
 import TimerButton from '../components/TimerButton';
 import { Audio } from 'expo-av';
+import * as SQLite from 'expo-sqlite';
+
+const db = SQLite.openDatabase('historyLog.db');
+
+db.transaction((tx) => {
+    tx.executeSql(
+        'CREATE TABLE IF NOT EXISTS logs (id INTEGER PRIMARY KEY AUTOINCREMENT, message TEXT, isPomo INTEGER, datetime DATETIME)' 
+        //'DROP TABLE IF EXISTS logs' // for dropping database
+    );
+});
 
 const FocusCycle = ({ is30Min }) => {
+
+    const { setLogs } = useContext(LogContext);
+    const { setPomoCount } = useContext(LogContext);
     const [isActive, setIsActive] = useState(false);
-    const [timerCount, setTimerCount] = useState(is30Min ? 10 : 2700);
+    const [timerCount, setTimerCount] = useState(null);
     const [isEnabled, setIsEnabled] = useState(false);
     const [sound, setSound] = useState(null);
     const pausedTimerCountRef = useRef(null);
+    const breakTimer = isEnabled ? (is30Min ? 300 : 900) : is30Min ? 1500 : 2700;
+    //const breakTimer = isEnabled ? (is30Min ? 2 : 3) : is30Min ? 4 : 5; //for debug`
 
     const toggleSwitch = () => setIsEnabled((previousState) => !previousState);
-    
-    useEffect(() => {
-        const breakTimer = isEnabled ? (is30Min ? 5 : 900) : is30Min ? 10 : 2700;
 
+    const insertLog = (message, isPomo) => {
+        const datetime = new Date().toISOString();
+
+        db.transaction((tx) => {
+            tx.executeSql('INSERT INTO logs (message, datetime, isPomo) VALUES (?, ?, ?)', [message, datetime, isPomo],
+                (_, { insertId }) => {
+                    // insertion successful, fetch logs again to update the state
+                    console.log('log inserted successfully: ', insertId);
+                    fetchLogs();
+                } 
+            );
+        });
+    };
+
+
+    const fetchLogs = () => {
+        db.transaction((tx) => {
+            tx.executeSql('SELECT * FROM logs ORDER BY id DESC;', [], (_, { rows }) => {
+                const logsData = rows._array;
+                setLogs(logsData); // update logs in the context
+            });
+            db.transaction((tx) => {
+                tx.executeSql('SELECT COUNT(*) as pomoCount FROM logs WHERE isPomo = 1', [], (_, { rows }) => {
+                    const { pomoCount } = rows.item(0);
+                    setPomoCount(pomoCount);
+                });
+            });
+        });
+    };
+
+    useEffect(() => {
+        fetchLogs();
+    }, []);
+
+    useEffect(() => {
         if (pausedTimerCountRef.current !== null) {
             setTimerCount(pausedTimerCountRef.current);
         } else {
@@ -31,9 +79,14 @@ const FocusCycle = ({ is30Min }) => {
                 setTimerCount((prevTimer) => {
                     if (prevTimer === 0) {
                         clearInterval(interval);
+                        insertLog(isEnabled 
+                            ? `Completed ${is30Min ? '5min' : '15min'} PomoBreak ${is30Min ? '(30min)' : '(60min)'}` 
+                            : `Completed ${is30Min ? '25min' : '45min'} PomoTimer ${is30Min ? '(30min)' : '(60min)'}`,
+                            1
+                        );
                         setIsActive(false);
                         notifyAlert();
-                        setIsEnabled((previousState) => !previousState);
+                        setIsEnabled((previousState) => !previousState);       
                         return breakTimer;
                     }
                     return prevTimer - 1;
@@ -41,7 +94,6 @@ const FocusCycle = ({ is30Min }) => {
             }, 1000);
         }
 
-        // to pause the timer from counting down
         return () => {
             clearInterval(interval);
         };
@@ -49,15 +101,24 @@ const FocusCycle = ({ is30Min }) => {
 
     const handleStartPause = () => {
         setIsActive((previousState) => !previousState);
-        if (!isActive) {
+        if (!isActive && pausedTimerCountRef.current !== null) {
+            setTimerCount(pausedTimerCountRef.current);
+        } else if (isActive) {
             pausedTimerCountRef.current = timerCount;
         }
+        console.log('Start/Pause Pressed');
     };
 
     const handleReset = () => {
         setIsActive(false);
-        setTimerCount(is30Min ? 10 : 2700);
-        pausedTimerCountRef.current = null;
+        setTimerCount(breakTimer);
+        pausedTimerCountRef.current = null;  
+        insertLog(isEnabled 
+            ? `Resets ${is30Min ? '5min' : '15min'} PomoBreak ${is30Min ? '(30min)' : '(60min)'}` 
+            : `Resets ${is30Min ? '25min' : '45min'} PomoTimer ${is30Min ? '(30min)' : '(60min)'}`,
+            0
+        );
+        console.log('Reset Pressed');
     };
 
     const notifyAlert = async () => {
@@ -65,23 +126,18 @@ const FocusCycle = ({ is30Min }) => {
             sound.unloadAsync();
         }
 
-        const { sound } = await Audio.Sound.createAsync(
-            require('../assets/clock-alarm.mp3')
-        );
+        const { sound } = await Audio.Sound.createAsync(require('../assets/clock-alarm.mp3'));
         setSound(sound);
         await sound.playAsync();
 
         Alert.alert(
             'Pomodoro Times Up!',
-            isEnabled
-            ? "Let's get into some work!"
-            : `Take ${is30Min ? 'a 5-minute' : 'a 15-minute'} break`,
+            isEnabled ? "Let's get into some work!" : `Take ${is30Min ? 'a 5-minute' : 'a 15-minute'} break`,
             {
                 text: 'OK',
                 onPress: () => {
                     console.log('OK Pressed');
                     if (sound) {
-                        // stop the sound when the user dismiss the alert
                         sound.stopAsync();
                     }
                 }
@@ -99,4 +155,3 @@ const FocusCycle = ({ is30Min }) => {
 };
 
 export default FocusCycle;
-
