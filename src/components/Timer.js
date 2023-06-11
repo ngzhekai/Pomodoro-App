@@ -17,18 +17,19 @@ const Timer = ({ timerCount }) => {
 
 const styles = {
     timerWrapper: {
-        backgroundColor: 'black',
-        borderRadius: 45,
-        height: 180,
-        width: 250,
+        backgroundColor: '#2C2C2E',
+        borderRadius: 100,
+        height: 200,
+        width: 200,
         marginBottom: 20,
     },
     timerText: {
         color: 'white',
-        fontSize: 25,
+        color: '#F2F2F7',
+        fontSize: 30,
         fontWeight: 'bold',
         textAlign: 'center',
-        paddingVertical: 75,
+        paddingVertical: 80,
     },
 };
 

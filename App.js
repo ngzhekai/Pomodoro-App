@@ -22,14 +22,14 @@ export default function App() {
         options={tabOptions}
         /> 
         <Tab.Screen 
-        name={'History'}
-        component={History}
-        options={tabOptions}
-        />
-        <Tab.Screen 
         name={'60-Min Cycle'}
         component={PomoScreen}
         initialParams={{ is30Min: false }}
+        options={tabOptions}
+        />
+        <Tab.Screen 
+        name={'History'}
+        component={History}
         options={tabOptions}
         />
         </Tab.Navigator>
@@ -44,7 +44,6 @@ const tabScreenOptions = ({ route }) => ({
         backgroundColor: 'white',
     },
     headerStyle: {
-        //backgroundColor: '#C5F4E0',
         backgroundColor: '#7D7AFF',
     },
     headerTitleStyle:{ 
