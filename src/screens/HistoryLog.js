@@ -28,7 +28,7 @@ const HistoryLog = () => {
 
         return (
             <Text key={item.id} style={textList}>
-            [{formattedDatetime}] - {item.isCompleted ? 'Completed' : 'Resets'} {item.task} ({item.timerType}min)
+            [{formattedDatetime}] - {item.isCompleted ? 'Completed' : 'Resets'} {item.event} ({item.timerType}min)
             </Text>
         );
     };

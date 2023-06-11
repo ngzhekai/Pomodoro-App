@@ -12,13 +12,13 @@ const db = SQLite.openDatabase('historyLog.db');
 
 db.transaction((tx) => {
     tx.executeSql(
-        'CREATE TABLE IF NOT EXISTS logs (id INTEGER PRIMARY KEY AUTOINCREMENT, task TEXT, datetime DATETIME, timerType INTEGER, isCompleted INTEGER)' 
+        'CREATE TABLE IF NOT EXISTS logs (id INTEGER PRIMARY KEY AUTOINCREMENT, event TEXT, datetime DATETIME, timerType INTEGER, isCompleted INTEGER)' 
         //'DROP TABLE IF EXISTS logs' // for dropping database
     );
 });
 
 const FocusCycle = ({ is30Min }) => {
-
+    
     const { setLogs } = useContext(LogContext);
     const { setPomoCompletedCount } = useContext(LogContext);
     const [isActive, setIsActive] = useState(false);
@@ -35,7 +35,7 @@ const FocusCycle = ({ is30Min }) => {
         const datetime = new Date().toISOString();
 
         db.transaction((tx) => {
-            tx.executeSql('INSERT INTO logs (task, datetime, isCompleted, timerType) VALUES (?, ?, ?, ?)', [message, datetime, isCompleted, timerType],
+            tx.executeSql('INSERT INTO logs (event, datetime, isCompleted, timerType) VALUES (?, ?, ?, ?)', [message, datetime, isCompleted, timerType],
                 (_, { insertId }) => {
                     // insertion successful, fetch logs again to update the state
                     console.log('log inserted successfully: ', insertId);
