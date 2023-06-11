@@ -34,6 +34,7 @@ const styles = StyleSheet.create({
         fontSize: 15,
         fontWeight: 'bold',
         paddingBottom: 10,
+        color: '#2C2C2E',
     },
 });
 

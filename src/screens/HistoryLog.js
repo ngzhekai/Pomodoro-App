@@ -14,7 +14,7 @@ const HistoryLog = () => {
     } = styles;
 
     const { logs } = useContext(LogContext);
-    const { pomoCount } = useContext(LogContext);
+    const { pomoCompletedCount } = useContext(LogContext);
 
     const renderLogItem = ({ item }) => {
         const formattedDatetime = new Date(item.datetime).toLocaleString('en-GB', {
@@ -27,15 +27,17 @@ const HistoryLog = () => {
         });
 
         return (
-            <Text key={item.id} style={textList}>[{formattedDatetime}] - {item.message}</Text>
+            <Text key={item.id} style={textList}>
+            [{formattedDatetime}] - {item.isCompleted ? 'Completed' : 'Resets'} {item.task} ({item.timerType}min)
+            </Text>
         );
     };
 
     return (
         <Layout>
         <View style={completedSection}>
-        <MaterialCommunityIcons name={pomoCount ? 'trophy': 'trophy-broken'}  size={70} color="black" />
-        <Text style={completedPomoText}>PomoTimer Completed : {pomoCount}</Text>
+        <MaterialCommunityIcons name={pomoCompletedCount ? 'trophy': 'trophy-broken'}  size={70} color="black" />
+        <Text style={completedPomoText}>PomoTimer Completed : {pomoCompletedCount}</Text>
         </View>
         <View style={historyList}>
         <Text style={historyTitle}>History</Text>

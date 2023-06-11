@@ -12,7 +12,7 @@ const db = SQLite.openDatabase('historyLog.db');
 
 db.transaction((tx) => {
     tx.executeSql(
-        'CREATE TABLE IF NOT EXISTS logs (id INTEGER PRIMARY KEY AUTOINCREMENT, message TEXT, isPomo INTEGER, datetime DATETIME)' 
+        'CREATE TABLE IF NOT EXISTS logs (id INTEGER PRIMARY KEY AUTOINCREMENT, task TEXT, datetime DATETIME, timerType INTEGER, isCompleted INTEGER)' 
         //'DROP TABLE IF EXISTS logs' // for dropping database
     );
 });
@@ -20,22 +20,22 @@ db.transaction((tx) => {
 const FocusCycle = ({ is30Min }) => {
 
     const { setLogs } = useContext(LogContext);
-    const { setPomoCount } = useContext(LogContext);
+    const { setPomoCompletedCount } = useContext(LogContext);
     const [isActive, setIsActive] = useState(false);
     const [timerCount, setTimerCount] = useState(null);
     const [isEnabled, setIsEnabled] = useState(false);
     const [sound, setSound] = useState(null);
     const pausedTimerCountRef = useRef(null);
     const breakTimer = isEnabled ? (is30Min ? 300 : 900) : is30Min ? 1500 : 2700;
-    //const breakTimer = isEnabled ? (is30Min ? 2 : 3) : is30Min ? 4 : 5; //for debug`
+    //const breakTimer = isEnabled ? (is30Min ? 2 : 3) : is30Min ? 4 : 5; //for debug ya
 
     const toggleSwitch = () => setIsEnabled((previousState) => !previousState);
 
-    const insertLog = (message, isPomo) => {
+    const insertLog = (message, isCompleted, timerType) => {
         const datetime = new Date().toISOString();
 
         db.transaction((tx) => {
-            tx.executeSql('INSERT INTO logs (message, datetime, isPomo) VALUES (?, ?, ?)', [message, datetime, isPomo],
+            tx.executeSql('INSERT INTO logs (task, datetime, isCompleted, timerType) VALUES (?, ?, ?, ?)', [message, datetime, isCompleted, timerType],
                 (_, { insertId }) => {
                     // insertion successful, fetch logs again to update the state
                     console.log('log inserted successfully: ', insertId);
@@ -53,9 +53,9 @@ const FocusCycle = ({ is30Min }) => {
                 setLogs(logsData); // update logs in the context
             });
             db.transaction((tx) => {
-                tx.executeSql('SELECT COUNT(*) as pomoCount FROM logs WHERE isPomo = 1', [], (_, { rows }) => {
+                tx.executeSql('SELECT COUNT(*) as pomoCount FROM logs WHERE isCompleted = 1', [], (_, { rows }) => {
                     const { pomoCount } = rows.item(0);
-                    setPomoCount(pomoCount);
+                    setPomoCompletedCount(pomoCount);
                 });
             });
         });
@@ -80,9 +80,10 @@ const FocusCycle = ({ is30Min }) => {
                     if (prevTimer === 0) {
                         clearInterval(interval);
                         insertLog(isEnabled 
-                            ? `Completed ${is30Min ? '5min' : '15min'} PomoBreak ${is30Min ? '(30min)' : '(60min)'}` 
-                            : `Completed ${is30Min ? '25min' : '45min'} PomoTimer ${is30Min ? '(30min)' : '(60min)'}`,
-                            1
+                            ? `${is30Min ? '5min' : '15min'} PomoBreak` 
+                            : `${is30Min ? '25min' : '45min'} PomoTimer`,
+                            1, 
+                            is30Min ? 30 : 60
                         );
                         setIsActive(false);
                         notifyAlert();
@@ -114,9 +115,10 @@ const FocusCycle = ({ is30Min }) => {
         setTimerCount(breakTimer);
         pausedTimerCountRef.current = null;  
         insertLog(isEnabled 
-            ? `Resets ${is30Min ? '5min' : '15min'} PomoBreak ${is30Min ? '(30min)' : '(60min)'}` 
-            : `Resets ${is30Min ? '25min' : '45min'} PomoTimer ${is30Min ? '(30min)' : '(60min)'}`,
-            0
+            ? `${is30Min ? '5min' : '15min'} PomoBreak` 
+            : `${is30Min ? '25min' : '45min'} PomoTimer`,
+            0,
+            is30Min ? 30 : 60
         );
         console.log('Reset Pressed');
     };
